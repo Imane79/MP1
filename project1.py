@@ -47,12 +47,45 @@ class HealthyPlannerApp:
         self.left_listbox = tk.Listbox(root, height=10)
         self.left_listbox.grid(row=1, column=0, rowspan=3,
                                padx=5, pady=5, sticky="nsew")
-        # Displays available items for the selected title.
+        # Add Button
+    self.add_button = tk.Button(root, text="Add", command=self.add_item)
+    self.add_button.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
-        self.right_listbox = tk.Listbox(root, height=10)
-        self.right_listbox.grid(
-            row=1, column=2, rowspan=3, padx=5, pady=5, sticky="nsew")
-        # Displays selected items (max 7 per category).
+    # Delete Button
+    self.delete_button = tk.Button(
+        root, text="Delete", command=self.remove_item)
+    self.delete_button.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+
+    # Randomize Button
+    self.randomize_button = tk.Button(
+        root, text="Randomize", command=self.randomize_selection)
+    self.randomize_button.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
+
+    # Text widget for full plan display
+    self.text_output = tk.Text(root, height=10, wrap="word")
+    self.text_output.grid(row=1, column=3, rowspan=3,
+                          columnspan=2, padx=5, pady=5, sticky="nsew")
+
+    # Displays available items for the selected title.
+    # Label for Week Number
+    tk.Label(root, text="Week Number:").grid(row=4, column=0, sticky="e")
+    self.week_entry = tk.Entry(root)
+    self.week_entry.grid(row=4, column=1, sticky="ew")
+    # Label and combobox for export format
+    tk.Label(root, text="Export Format:").grid(row=4, column=2, sticky="e")
+    self.export_format = ttk.Combobox(
+        root, values=["txt", "json", "xls"], state="readonly")
+    self.export_format.set("txt")
+    self.export_format.grid(row=4, column=3, sticky="ew")
+    # Export Button
+    self.export_button = tk.Button(
+        root, text="Export", command=self.export_plan)
+    self.export_button.grid(row=4, column=4, padx=5, pady=5, sticky="ew")
+
+    self.right_listbox = tk.Listbox(root, height=10)
+    self.right_listbox.grid(
+        row=1, column=2, rowspan=3, padx=5, pady=5, sticky="nsew")
+    # Displays selected items (max 7 per category).
 
     # Placeholder methods to avoid errors
     def import_excel(self):
@@ -60,6 +93,18 @@ class HealthyPlannerApp:
 
     def update_left_listbox(self):
         print("Update left listbox logic goes here.")
+
+    def export_plan(self):
+        print("Export plan logic goes here.")
+
+    def add_item(self):
+        print("Add item logic goes here.")
+
+    def remove_item(self):
+        print("Remove item logic goes here.")
+
+    def randomize_selection(self):
+        print("Random selection logic goes here.")
 
 
 # Entry point to run the GUI
