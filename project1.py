@@ -33,3 +33,25 @@ class HealthyPlannerApp:
         # This button lets users load their healthy plan Excel file (like data.xlsx).
         # It’s placed in row 0, column 0, with padding.
         # command=self.import_excel: when clicked, it will call the method self.import_excel() (we'll implement it soon).
+        self.title_combobox = ttk.Combobox(
+            root, textvariable=self.selected_title, state="readonly")
+        self.title_combobox['values'] = ("Sports", "Food Plans", "Activities")
+        self.title_combobox.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.title_combobox.bind(
+            "<<ComboboxSelected>>", lambda e: self.update_left_listbox())
+        # This dropdown lets users choose which category they're working on.
+        # Bound to self.selected_title, a StringVar we set earlier.
+        # Default is "Sports", but also supports "Food Plans" and "Activities".
+        # When the selection changes, it triggers update_left_listbox() to refresh the left listbox with new items.
+        self.left_listbox = tk.Listbox(root, height=10)
+        self.left_listbox.grid(row=1, column=0, rowspan=3,
+                               padx=5, pady=5, sticky="nsew")
+        # Displays available items for the selected title.
+        # Placed on the left side.
+        # Takes up rows 1–3 (rowspan=3) so it’s vertically tall.
+        self.right_listbox = tk.Listbox(root, height=10)
+        self.right_listbox.grid(
+            row=1, column=2, rowspan=3, padx=5, pady=5, sticky="nsew")
+        # Displays selected items (max 7 per category).
+        # Located to the right of the center buttons.
+        # Also spans 3 rows for alignment.
