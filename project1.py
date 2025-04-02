@@ -152,12 +152,59 @@ class HealthyPlannerApp:
         self.right_listbox.delete(0, tk.END)
         for i in self.selected_items[title]:
             self.right_listbox.insert(tk.END, i)
+        self.refresh_text_widget()
 
     def remove_item(self):
-        print("Remove item logic goes here.")
+        title = self.selected_title.get()
+        selected = self.right_listbox.curselection()
+
+        if not selected:
+            messagebox.showwarning(
+                "No Selection", "Please select an item to remove.")
+            return
+
+        item = self.right_listbox.get(selected[0])
+
+        if item in self.selected_items[title]:
+            self.selected_items[title].remove(item)
+
+            # Refresh the right listbox
+            self.right_listbox.delete(0, tk.END)
+            for i in self.selected_items[title]:
+                self.right_listbox.insert(tk.END, i)
+                self.refresh_text_widget()
 
     def randomize_selection(self):
-        print("Random selection logic goes here.")
+        if not self.data:
+            messagebox.showwarning(
+                "No Data", "Please import an Excel file first.")
+            return
+
+        for category in ["Sports", "Food Plans", "Activities"]:
+            items = self.data.get(category, [])
+            if len(items) < 7:
+                messagebox.showwarning(
+                    "Not Enough Items", f"Not enough items in {category} to randomize.")
+                return
+            self.selected_items[category] = random.sample(items, 7)
+
+        # Refresh the right listbox based on selected title
+        self.right_listbox.delete(0, tk.END)
+        current = self.selected_title.get()
+        for item in self.selected_items[current]:
+            self.right_listbox.insert(tk.END, item)
+
+        messagebox.showinfo("Success", "Plan randomized for all categories!")
+        self.refresh_text_widget()
+
+    def refresh_text_widget(self):
+        self.text_output.delete("1.0", tk.END)  # Clear previous content
+        self.text_output.insert(tk.END, "Weekly Healthy Lifestyle Plan\n\n")
+        for category in ["Sports", "Food Plans", "Activities"]:
+            self.text_output.insert(tk.END, f"{category}:\n")
+            for i, item in enumerate(self.selected_items[category], 1):
+                self.text_output.insert(tk.END, f"  {i}. {item}\n")
+            self.text_output.insert(tk.END, "\n")
 
     def export_plan(self):
         week_number = self.week_entry.get().strip()
