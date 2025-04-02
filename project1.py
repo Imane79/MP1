@@ -1,23 +1,24 @@
 import tkinter as tk  # tkinter is Python’s built-in GUI library.
 from tkinter import ttk, filedialog, messagebox
-# ttk gives us modern widgets like Combobox, filedialog allows file selection (e.g., for Excel import)
-# messagebox will be used for warnings/errors/success.
 import pandas as pd  # pandas is for reading Excel and exporting .xls.
 import random  # random is for the "Randomize" feature.
 import json  # is for exporting to .json format.
 
-# We define a class HealthyPlannerApp that will encapsulate all logic and UI components.
-
 
 class HealthyPlannerApp:
     def __init__(self, root):
-        # Setup root window
         self.root = root
         self.root.title("Healthy Lifestyle Planner")
 
         # State
         self.data = {}
         self.selected_title = tk.StringVar(value="Sports")
+
+        self.selected_items = {
+            "Sports": [],
+            "Food Plans": [],
+            "Activities": []
+        }
 
         # Grid layout config
         for i in range(6):
@@ -81,42 +82,129 @@ class HealthyPlannerApp:
             root, text="Export", command=self.export_plan)
         self.export_button.grid(row=4, column=4, padx=5, pady=5, sticky="ew")
 
+    def import_excel(self):
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Select Excel File",
+                filetypes=[("Excel Files", "*.xlsx *.xls")]
+            )
+            if not file_path:
+                return  # User cancelled
 
-def import_excel(self):
-    try:
-        file_path = filedialog.askopenfilename(
-            title="Select Excel File",
-            filetypes=[("Excel Files", "*.xlsx *.xls")]
-        )
-        if not file_path:
-            return  # User cancelled
+            df = pd.read_excel(file_path)
 
-        # Read Excel file using pandas
-        df = pd.read_excel(file_path)
+            required_columns = {"Sports", "Food Plans", "Activities"}
+            if not required_columns.issubset(df.columns):
+                messagebox.showerror(
+                    "Invalid Format", "Excel file must contain 'Sports', 'Food Plans', and 'Activities' columns.")
+                return
 
-        # Validate required columns
-        required_columns = {"Sports", "Food Plans", "Activities"}
-        if not required_columns.issubset(df.columns):
+            self.data = {
+                "Sports": df["Sports"].dropna().tolist(),
+                "Food Plans": df["Food Plans"].dropna().tolist(),
+                "Activities": df["Activities"].dropna().tolist()
+            }
+
+            messagebox.showinfo("Success", "Excel data imported successfully!")
+            self.update_left_listbox()
+
+        except Exception as e:
             messagebox.showerror(
-                "Invalid Format", "Excel file must contain 'Sports', 'Food Plans', and 'Activities' columns.")
+                "Error", f"Failed to import Excel file:\n{str(e)}")
+
+    def update_left_listbox(self):
+        title = self.selected_title.get()
+        items = self.data.get(title, [])
+
+        self.left_listbox.delete(0, tk.END)
+
+        for item in items:
+            self.left_listbox.insert(tk.END, item)
+
+        # Reset right listbox for new category
+        self.right_listbox.delete(0, tk.END)
+        for item in self.selected_items[title]:
+            self.right_listbox.insert(tk.END, item)
+
+    def add_item(self):
+        title = self.selected_title.get()
+        selected = self.left_listbox.curselection()
+
+        if not selected:
+            messagebox.showwarning(
+                "No Selection", "Please select an item to add.")
             return
 
-        # Store data in self.data dictionary
-        self.data = {
-            "Sports": df["Sports"].dropna().tolist(),
-            "Food Plans": df["Food Plans"].dropna().tolist(),
-            "Activities": df["Activities"].dropna().tolist()
+        item = self.left_listbox.get(selected[0])
+
+        if len(self.selected_items[title]) >= 7:
+            messagebox.showwarning(
+                "Limit Reached", f"You can only select 7 items for {title}.")
+            return
+
+        if item in self.selected_items[title]:
+            messagebox.showinfo(
+                "Already Added", f"{item} is already selected.")
+            return
+
+        self.selected_items[title].append(item)
+
+        self.right_listbox.delete(0, tk.END)
+        for i in self.selected_items[title]:
+            self.right_listbox.insert(tk.END, i)
+
+    def remove_item(self):
+        print("Remove item logic goes here.")
+
+    def randomize_selection(self):
+        print("Random selection logic goes here.")
+
+    def export_plan(self):
+        week_number = self.week_entry.get().strip()
+        if not week_number.isdigit():
+            messagebox.showerror(
+                "Invalid Input", "Please enter a valid week number.")
+            return
+        for category, items in self.selected_items.items():
+            if len(items) != 7:
+                messagebox.showwarning(
+                    "Incomplete Plan", f"{category} must have exactly 7 items.")
+                return
+
+        plan = {
+            "Week": int(week_number),
+            "Sports": self.selected_items["Sports"],
+            "Food Plans": self.selected_items["Food Plans"],
+            "Activities": self.selected_items["Activities"]
         }
 
-        messagebox.showinfo("Success", "Excel data imported successfully!")
-        self.update_left_listbox()
+        filetype = self.export_format.get()
+        filename = f"HealthyLifeStyleForWeek{week_number}.{filetype}"
+        try:
+            if filetype == "txt":
+                with open(filename, "w") as f:
+                    for key, values in plan.items():
+                        if isinstance(values, list):
+                            f.write(f"{key}:\n")
+                            for v in values:
+                                f.write(f"- {v}\n")
+                            f.write("\n")
+                        else:
+                            f.write(f"{key}: {values}\n\n")
+            elif filetype == "json":
+                with open(filename, "w") as f:
+                    json.dump(plan, f, indent=4)
+            elif filetype == "xls":
+                df = pd.DataFrame(
+                    dict([(k, pd.Series(v)) for k, v in plan.items() if isinstance(v, list)]))
+                df.to_excel(filename, index=False)
 
-    except Exception as e:
-        messagebox.showerror(
-            "Error", f"Failed to import Excel file:\n{str(e)}")
+            messagebox.showinfo(
+                "Exported", f"Plan exported successfully as {filename}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export plan:\n{str(e)}")
 
 
-# Entry point
 if __name__ == "__main__":
     root = tk.Tk()
     app = HealthyPlannerApp(root)
