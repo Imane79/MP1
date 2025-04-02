@@ -5,3 +5,15 @@ from tkinter import ttk, filedialog, messagebox
 import pandas as pd  # pandas is for reading Excel and exporting .xls.
 import random  # random is for the "Randomize" feature.
 import json  # is for exporting to .json format.
+
+# We define a class HealthyPlannerApp that will encapsulate all logic and UI components.
+
+
+class HealthyPlannerApp:
+    def __init__(self, root):
+        # __init__ is the constructor — it runs when the app starts.
+        # root is the main Tk() window passed into the class when it is initialized.
+        self.root = root
+        self.root.title("Healthy Lifestyle Planner")
+        # Store the passed root window in self.root so it’s accessible everywhere in the class.
+        # Set the window title that appears in the window's title bar.
